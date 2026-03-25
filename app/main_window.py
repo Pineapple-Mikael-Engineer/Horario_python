@@ -1,9 +1,11 @@
 from datetime import date
+import os
 
-from PyQt6.QtWidgets import QFileDialog, QHBoxLayout, QMainWindow, QMessageBox, QPushButton, QTabWidget, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMessageBox, QPushButton, QTabWidget, QVBoxLayout, QWidget
 
 from .constants import PALETTE
 from .data import DATA_FILE, export_data, import_data, load_data, save_data
+from .dialogs import SettingsDialog
 from .styles import GLOBAL_STYLE
 from .tabs import EstadisticasTab, HorarioTab, RegistroTab
 from .widgets import Label
@@ -41,6 +43,9 @@ class MainWindow(QMainWindow):
         btn_export = QPushButton("Exportar BD")
         btn_export.clicked.connect(self._export_db)
         tbl.addWidget(btn_export)
+        btn_settings = QPushButton("⚙ Ajustes")
+        btn_settings.clicked.connect(self._open_settings)
+        tbl.addWidget(btn_settings)
         tbl.addWidget(Label(date.today().strftime("%A, %d de %B de %Y"), 12, PALETTE['muted']))
         main_lay.addWidget(topbar)
 
@@ -100,3 +105,18 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "Importación completada", "La base de datos fue importada correctamente.")
         except Exception as exc:
             QMessageBox.critical(self, "Error al importar", f"No se pudo importar el archivo:\n{exc}")
+
+    def _open_settings(self):
+        dlg = SettingsDialog(self.data, self)
+        if dlg.exec():
+            self.data["settings"] = dlg.get_settings()
+            save_data(self.data)
+            app = QApplication.instance()
+            if app:
+                app.setStyleSheet(f"* {{ font-size: {self.data['settings']['font_size']}px; }}")
+            os.environ["PRODUCTIVIDAD_THEME"] = self.data["settings"]["theme"]
+            QMessageBox.information(
+                self,
+                "Ajustes guardados",
+                "La fuente se aplicó de inmediato.\nPara aplicar completamente el tema, reinicia la aplicación.",
+            )

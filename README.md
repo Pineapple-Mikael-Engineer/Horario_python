@@ -12,6 +12,7 @@ Aplicación de escritorio para planificar y registrar sesiones de estudio/produc
 - **Gestión de etiquetas** desde la interfaz.
 - **Renombrado de bloques** B1–B4.
 - **Importación / exportación de base de datos** en formato JSON.
+- **Ajustes desde UI**: tema (dark/light), tamaño de fuente y auto-registro desde horario.
 - **Panel de estadísticas** con KPIs y gráficos:
   - Horas por bloque.
   - Horas por etiqueta.
@@ -78,6 +79,8 @@ La aplicación guarda información en `productividad_data.json` (en la raíz del
 - `tags`: catálogo de etiquetas sugeridas.
 - `schedule`: sobrescrituras del horario base.
 - `b_nombres`: nombres personalizados de bloques.
+- `settings`: configuración de tema, fuente y automatizaciones.
+- `week_meta`: metadatos de semana para reset visual del horario cada lunes.
 
 ## Desarrollo
 

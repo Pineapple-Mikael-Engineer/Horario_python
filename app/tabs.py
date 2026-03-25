@@ -114,7 +114,8 @@ class HorarioTab(QWidget):
                     cell_text = sched[cell_key].get("text", "")
                 else:
                     cell_type, cell_text = base_type, base_text
-                self.grid.addWidget(self._make_cell(hour, c, cell_type, cell_text, today_col), r + 1, c + 1)
+                editable = base_type == "LIBRE"
+                self.grid.addWidget(self._make_cell(hour, c, cell_type, cell_text, today_col, editable), r + 1, c + 1)
 
         self.grid.setColumnMinimumWidth(0, 86)
         self.grid.setColumnStretch(0, 0)
@@ -122,7 +123,7 @@ class HorarioTab(QWidget):
             self.grid.setColumnMinimumWidth(c + 1, 124)
             self.grid.setColumnStretch(c + 1, 1)
 
-    def _make_cell(self, hour, day_col, cell_type, cell_text, today_col):
+    def _make_cell(self, hour, day_col, cell_type, cell_text, today_col, editable=False):
         info = SCHEDULE_TYPES.get(cell_type, ("?", PALETTE['muted']))
         color = info[1]
         is_today = day_col == today_col
@@ -134,22 +135,23 @@ class HorarioTab(QWidget):
 
         if cell_type == "LIBRE":
             bg = PALETTE['surface2'] if not is_today else PALETTE['surface3']
-            bdr = "#2a3555" if is_today else PALETTE['border']
+            bdr = color if is_today else PALETTE['border']
             btn.setStyleSheet(
                 f"""
                 QPushButton {{
-                    background:{bg}; color:{PALETTE['dim']};
+                    background:{bg}; color:{PALETTE['text']};
                     border:1px dashed {bdr}; border-radius:6px;
-                    font-size:11px;
+                    font-size:12px; font-weight:600;
                 }}
                 QPushButton:hover {{
-                    background:{PALETTE['surface3']}; color:{PALETTE['muted']};
+                    background:{PALETTE['surface3']}; color:{PALETTE['text']};
                     border-style:solid;
                 }}
             """
             )
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda _, h=hour, d=day_col: self._cell_click(h, d))
+            if editable:
+                btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                btn.clicked.connect(lambda _, h=hour, d=day_col: self._cell_click(h, d))
         elif cell_type in ("B1", "B2", "B3", "B4"):
             btn.setStyleSheet(
                 f"""
@@ -162,7 +164,10 @@ class HorarioTab(QWidget):
             """
             )
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda _, h=hour, d=day_col, bl=cell_type: self._register_block(h, d, bl))
+            if editable:
+                btn.clicked.connect(lambda _, h=hour, d=day_col: self._cell_click(h, d))
+            else:
+                btn.clicked.connect(lambda _, h=hour, d=day_col, bl=cell_type: self._register_block(h, d, bl))
         else:
             btn.setStyleSheet(
                 f"""
@@ -184,7 +189,12 @@ class HorarioTab(QWidget):
         if dlg.exec():
             block_type = dlg.get_type()
             cell_key = f"{hour}_{day_col}"
-            self.data.setdefault("schedule", {})[cell_key] = {"type": block_type, "text": BLOQUES.get(block_type, ("", ""))[0]}
+            self._remove_auto_registro(hour, day_col)
+            if block_type == "LIBRE":
+                self.data.setdefault("schedule", {}).pop(cell_key, None)
+            else:
+                self.data.setdefault("schedule", {})[cell_key] = {"type": block_type, "text": BLOQUES.get(block_type, ("", ""))[0]}
+                self._sync_auto_registro(hour, day_col, block_type)
             save_data(self.data)
             self._build_table()
 
@@ -204,6 +214,41 @@ class HorarioTab(QWidget):
 
     def refresh(self):
         self._build_table()
+
+    def _slot_hours(self, hour):
+        start, end = hour.split("–")
+        return max(0.25, float(int(end) - int(start)))
+
+    def _slot_date(self, day_col):
+        return self._monday() + timedelta(days=day_col)
+
+    def _remove_auto_registro(self, hour, day_col):
+        slot_date = self._slot_date(day_col).isoformat()
+        slot_id = f"{slot_date}_{hour}_{day_col}"
+        self.data["registros"] = [
+            r for r in self.data.get("registros", [])
+            if r.get("auto_slot") != slot_id
+        ]
+
+    def _sync_auto_registro(self, hour, day_col, block_type):
+        settings = self.data.get("settings", {})
+        slot_date = self._slot_date(day_col)
+        if not settings.get("auto_registro_horario", True):
+            return
+        if slot_date != date.today():
+            return
+        slot_id = f"{slot_date.isoformat()}_{hour}_{day_col}"
+        self.data.setdefault("registros", []).append(
+            {
+                "date": slot_date.isoformat(),
+                "bloque": block_type,
+                "horas": self._slot_hours(hour),
+                "subtema": None,
+                "nota": f"Auto-horario {hour}",
+                "tags": ["Auto"],
+                "auto_slot": slot_id,
+            }
+        )
 
 
 class RegistroTab(QWidget):

@@ -7,6 +7,7 @@ from .constants import DATA_FILE
 
 def _sample_data():
     today = date.today()
+    monday = today - timedelta(days=today.weekday())
     temas = [
         {"id": "py", "nombre": "Python"},
         {"id": "ia", "nombre": "IA aplicada"},
@@ -38,21 +39,27 @@ def _sample_data():
             "B3": "Construcción / Proyecto",
             "B4": "Investigación / Debugging",
         },
+        "settings": {"theme": "dark", "font_size": 13, "auto_registro_horario": True},
+        "week_meta": {"start": monday.isoformat()},
     }
 
 
 def load_data():
+    defaults = _sample_data()
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return _sample_data()
+            loaded = json.load(f)
+        defaults.update({k: v for k, v in loaded.items() if k in defaults})
+        defaults["settings"] = {**_sample_data()["settings"], **loaded.get("settings", {})}
+        defaults["week_meta"] = {**_sample_data()["week_meta"], **loaded.get("week_meta", {})}
 
-
-def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return _sample_data()
+        today = date.today()
+        current_monday = today - timedelta(days=today.weekday())
+        if defaults["week_meta"].get("start") != current_monday.isoformat():
+            defaults["schedule"] = {}
+            defaults["week_meta"]["start"] = current_monday.isoformat()
+        return defaults
+    return defaults
 
 
 def save_data(data):
