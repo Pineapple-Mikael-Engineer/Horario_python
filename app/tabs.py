@@ -189,12 +189,10 @@ class HorarioTab(QWidget):
         if dlg.exec():
             block_type = dlg.get_type()
             cell_key = f"{hour}_{day_col}"
-            self._remove_auto_registro(hour, day_col)
             if block_type == "LIBRE":
                 self.data.setdefault("schedule", {}).pop(cell_key, None)
             else:
                 self.data.setdefault("schedule", {})[cell_key] = {"type": block_type, "text": BLOQUES.get(block_type, ("", ""))[0]}
-                self._sync_auto_registro(hour, day_col, block_type)
             save_data(self.data)
             self._build_table()
 
@@ -232,35 +230,6 @@ class HorarioTab(QWidget):
 
     def _slot_date(self, day_col):
         return self._monday() + timedelta(days=day_col)
-
-    def _remove_auto_registro(self, hour, day_col):
-        slot_date = self._slot_date(day_col).isoformat()
-        slot_id = f"{slot_date}_{hour}_{day_col}"
-        self.data["registros"] = [
-            r for r in self.data.get("registros", [])
-            if r.get("auto_slot") != slot_id
-        ]
-
-    def _sync_auto_registro(self, hour, day_col, block_type):
-        settings = self.data.get("settings", {})
-        slot_date = self._slot_date(day_col)
-        if not settings.get("auto_registro_horario", True):
-            return
-        if slot_date != date.today():
-            return
-        slot_id = f"{slot_date.isoformat()}_{hour}_{day_col}"
-        self.data.setdefault("registros", []).append(
-            {
-                "date": slot_date.isoformat(),
-                "bloque": block_type,
-                "horas": self._slot_hours(hour),
-                "subtema": None,
-                "nota": f"Auto-horario {hour}",
-                "tags": ["Auto"],
-                "auto_slot": slot_id,
-            }
-        )
-
 
 class RegistroTab(QWidget):
     registro_added = pyqtSignal()
