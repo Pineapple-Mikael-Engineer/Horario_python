@@ -3,6 +3,8 @@ import json
 
 from .styles import get_palette
 
+from .styles import get_palette
+
 DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "productividad_data.json")
 
 
