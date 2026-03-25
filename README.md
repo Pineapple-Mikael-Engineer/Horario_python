@@ -72,7 +72,7 @@ PRODUCTIVIDAD_THEME=light python productividad.py
 
 La aplicación guarda información en `productividad_data.json` (en la raíz del proyecto), incluyendo:
 
-> Si el archivo no existe, la app inicia con **datos de prueba** para facilitar validación visual y de gráficas.
+> Si el archivo no existe, la app inicia con estructura vacía para comenzar desde cero.
 
 - `registros`: sesiones registradas.
 - `b1_temas`: catálogo de subtemas de B1.
