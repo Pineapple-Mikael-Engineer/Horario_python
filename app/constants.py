@@ -1,23 +1,10 @@
 import os
 
+from .styles import get_palette
+
 DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "productividad_data.json")
 
-PALETTE = {
-    "bg": "#08090c",
-    "surface": "#0f1117",
-    "surface2": "#161820",
-    "surface3": "#1c1f2a",
-    "border": "#1e2133",
-    "text": "#dde1ec",
-    "muted": "#5a6075",
-    "dim": "#2a2d3a",
-    "B1": "#a78bfa",
-    "B2": "#38bdf8",
-    "B3": "#2dd4bf",
-    "B4": "#fb923c",
-    "EJ": "#22c55e",
-    "clase": "#818cf8",
-}
+PALETTE = get_palette()
 
 BLOQUES = {
     "B1": ("Aprendizaje", PALETTE["B1"]),

@@ -37,6 +37,15 @@ Desde la raíz del proyecto:
 python productividad.py
 ```
 
+### Modo de color
+
+Puedes ejecutar la app en tema oscuro (por defecto) o claro mediante la variable de entorno `PRODUCTIVIDAD_THEME`:
+
+```bash
+PRODUCTIVIDAD_THEME=dark python productividad.py
+PRODUCTIVIDAD_THEME=light python productividad.py
+```
+
 ## Estructura del proyecto
 
 ```text
@@ -58,6 +67,8 @@ python productividad.py
 ## Datos y persistencia
 
 La aplicación guarda información en `productividad_data.json` (en la raíz del proyecto), incluyendo:
+
+> Si el archivo no existe, la app inicia con **datos de prueba** para facilitar validación visual y de gráficas.
 
 - `registros`: sesiones registradas.
 - `b1_temas`: catálogo de subtemas de B1.
