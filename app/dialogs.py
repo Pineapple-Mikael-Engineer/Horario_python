@@ -2,6 +2,7 @@ from datetime import date, datetime
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -11,13 +12,14 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QPushButton,
+    QSpinBox,
     QVBoxLayout,
     QDoubleSpinBox,
 )
 
 from .constants import BLOQUES, DAYS_ES, PALETTE
 from .data import save_data
-from .styles import GLOBAL_STYLE, btn_color
+from .styles import btn_color, get_global_style
 from .widgets import Label, Separator
 
 
@@ -27,7 +29,7 @@ class RegistrarDialog(QDialog):
         self.data = data
         self.setWindowTitle("Registrar sesión")
         self.setMinimumWidth(420)
-        self.setStyleSheet(GLOBAL_STYLE + f"QDialog {{ background:{PALETTE['surface2']}; border-radius:14px; }}")
+        self.setStyleSheet(get_global_style(PALETTE) + f"QDialog {{ background:{PALETTE['surface2']}; border-radius:14px; }}")
 
         lay = QVBoxLayout(self)
         lay.setSpacing(14)
@@ -122,7 +124,7 @@ class TemasB1Dialog(QDialog):
         self.data = data
         self.setWindowTitle("Administrar temas B1")
         self.setMinimumSize(400, 420)
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(get_global_style(PALETTE))
         lay = QVBoxLayout(self)
         lay.setContentsMargins(20, 20, 20, 20)
         lay.setSpacing(12)
@@ -183,15 +185,16 @@ class AssignBlockDialog(QDialog):
     def __init__(self, data, hour, day_col, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Asignar bloque")
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(get_global_style(PALETTE))
         self.setFixedWidth(320)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(20, 20, 20, 20)
         lay.setSpacing(12)
         bnames = data.get("b_nombres", {})
         lay.addWidget(Label(f"Asignar {DAYS_ES[day_col]} {hour}", 14, bold=True))
-        lay.addWidget(Label("¿Qué bloque usarás en este espacio?", 12, PALETTE['muted']))
+        lay.addWidget(Label("¿Qué bloque usarás en este espacio? (o limpiar)", 12, PALETTE['muted']))
         self.cb = QComboBox()
+        self.cb.addItem("🧠 B* (sin asignar)", "LIBRE")
         for k, (default_name, _) in BLOQUES.items():
             name = bnames.get(k, default_name) if k != "EJ" else "Ejercicio"
             self.cb.addItem(f"{k} — {name}", k)
@@ -211,7 +214,7 @@ class TagsDialog(QDialog):
         self.data = data
         self.setWindowTitle("Administrar etiquetas")
         self.setMinimumSize(400, 420)
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(get_global_style(PALETTE))
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(20, 20, 20, 20)
@@ -266,3 +269,54 @@ class TagsDialog(QDialog):
         self.data["tags"] = [t for t in self.data.get("tags", []) if t != name]
         save_data(self.data)
         self._reload()
+
+
+class SettingsDialog(QDialog):
+    def __init__(self, data, parent=None):
+        super().__init__(parent)
+        self.data = data
+        self.setWindowTitle("Configuración")
+        self.setMinimumWidth(380)
+        self.setStyleSheet(get_global_style(PALETTE))
+
+        settings = self.data.setdefault("settings", {})
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(20, 20, 20, 20)
+        lay.setSpacing(12)
+        lay.addWidget(Label("Ajustes visuales y comportamiento", 16, bold=True))
+        lay.addWidget(Separator())
+
+        row_theme = QHBoxLayout()
+        row_theme.addWidget(Label("Tema:", 12, PALETTE["muted"]))
+        self.theme_cb = QComboBox()
+        self.theme_cb.addItem("Dark (Obsidian Nord)", "dark")
+        self.theme_cb.addItem("Light (Blue Topaz)", "light")
+        current_theme = settings.get("theme", "dark")
+        self.theme_cb.setCurrentIndex(0 if current_theme == "dark" else 1)
+        row_theme.addWidget(self.theme_cb)
+        lay.addLayout(row_theme)
+
+        row_font = QHBoxLayout()
+        row_font.addWidget(Label("Tamaño de fuente:", 12, PALETTE["muted"]))
+        self.font_spin = QSpinBox()
+        self.font_spin.setRange(11, 18)
+        self.font_spin.setValue(int(settings.get("font_size", 13)))
+        row_font.addWidget(self.font_spin)
+        lay.addLayout(row_font)
+
+        self.auto_cb = QCheckBox("Registro automático desde horario (solo día actual)")
+        self.auto_cb.setChecked(bool(settings.get("auto_registro_horario", True)))
+        lay.addWidget(self.auto_cb)
+
+        lay.addWidget(Label("Nota: el cambio de tema se aplica al reiniciar la app.", 11, PALETTE["muted"], italic=True))
+        btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        btns.accepted.connect(self.accept)
+        btns.rejected.connect(self.reject)
+        lay.addWidget(btns)
+
+    def get_settings(self):
+        return {
+            "theme": self.theme_cb.currentData(),
+            "font_size": self.font_spin.value(),
+            "auto_registro_horario": self.auto_cb.isChecked(),
+        }
