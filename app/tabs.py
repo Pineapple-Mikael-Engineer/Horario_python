@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
 
 from .constants import BASE_SCHEDULE, BLOQUES, DAYS_ES, HOURS, PALETTE, SCHEDULE_TYPES
 from .data import save_data
-from .dialogs import AssignBlockDialog, RegistrarDialog, TagsDialog, TemasB1Dialog
+from .dialogs import AssignBlockDialog, TagsDialog, TemasB1Dialog
 from .styles import btn_color
 from .widgets import KpiCard, Label, MplCanvas, Separator
 
@@ -199,18 +199,25 @@ class HorarioTab(QWidget):
             self._build_table()
 
     def _register_block(self, hour, day_col, bloque):
-        _ = (hour, day_col)
-        dlg = RegistrarDialog(self.data, bloque, self)
-        if dlg.exec():
-            reg = dlg.get_registro()
-            self.data.setdefault("registros", []).append(reg)
-            tags = self.data.setdefault("tags", [])
-            for tag in reg.get("tags", []):
-                if tag not in tags:
-                    tags.append(tag)
-            tags.sort(key=str.lower)
-            save_data(self.data)
-            self.registro_added.emit()
+        slot_date = self._slot_date(day_col)
+        if slot_date != date.today():
+            QMessageBox.information(self, "Registro automático", "Solo se registra automáticamente en el día actual.")
+            return
+        self._remove_auto_registro(hour, day_col)
+        slot_id = f"{slot_date.isoformat()}_{hour}_{day_col}"
+        self.data.setdefault("registros", []).append(
+            {
+                "date": slot_date.isoformat(),
+                "bloque": bloque,
+                "horas": self._slot_hours(hour),
+                "subtema": None,
+                "nota": f"Auto-horario {hour}",
+                "tags": ["Auto"],
+                "auto_slot": slot_id,
+            }
+        )
+        save_data(self.data)
+        self.registro_added.emit()
 
     def refresh(self):
         self._build_table()
@@ -329,18 +336,42 @@ class RegistroTab(QWidget):
         self.refresh()
 
     def _quick_register(self, bloque):
-        dlg = RegistrarDialog(self.data, bloque, self)
-        if dlg.exec():
-            reg = dlg.get_registro()
-            self.data.setdefault("registros", []).append(reg)
-            tags = self.data.setdefault("tags", [])
-            for tag in reg.get("tags", []):
-                if tag not in tags:
-                    tags.append(tag)
-            tags.sort(key=str.lower)
-            save_data(self.data)
-            self.refresh()
-            self.registro_added.emit()
+        by_block = self._today_available_hours()
+        hours = by_block.get(bloque, 0.0)
+        if hours <= 0:
+            QMessageBox.warning(self, "Bloque no disponible", "Ese bloque no está disponible en tu horario de hoy.")
+            return
+        today = date.today().isoformat()
+        self.data["registros"] = [
+            r for r in self.data.get("registros", [])
+            if not (r.get("date") == today and r.get("bloque") == bloque and r.get("nota") == "Auto-resumen diario")
+        ]
+        self.data.setdefault("registros", []).append(
+            {
+                "date": today,
+                "bloque": bloque,
+                "horas": hours,
+                "subtema": None,
+                "nota": "Auto-resumen diario",
+                "tags": ["Auto"],
+            }
+        )
+        save_data(self.data)
+        self.refresh()
+        self.registro_added.emit()
+
+    def _today_available_hours(self):
+        today_col = date.today().weekday()
+        sched = self.data.get("schedule", {})
+        by_block = defaultdict(float)
+        for hour in HOURS:
+            base_type, _ = BASE_SCHEDULE.get(hour, {}).get(today_col, ("LIBRE", ""))
+            cell_key = f"{hour}_{today_col}"
+            cell_type = sched.get(cell_key, {}).get("type", base_type)
+            if cell_type in BLOQUES:
+                start, end = hour.split("–")
+                by_block[cell_type] += max(0.25, float(int(end) - int(start)))
+        return by_block
 
     def _manage_temas(self):
         TemasB1Dialog(self.data, self).exec()
@@ -464,6 +495,8 @@ class EstadisticasTab(QWidget):
         by_block = defaultdict(float)
         by_tag = defaultdict(float)
         for _, r in filtered:
+            if r.get("bloque") not in BLOQUES:
+                continue
             by_block[r["bloque"]] += r["horas"]
             tags = r.get("tags", [])
             if tags:
@@ -506,7 +539,7 @@ class EstadisticasTab(QWidget):
         canvas2 = MplCanvas(8, 3.2)
         ax2 = canvas2.fig.add_subplot(111)
         by_date = defaultdict(lambda: defaultdict(float))
-        for d, r in sorted(filtered):
+        for d, r in sorted(filtered, key=lambda x: x[0]):
             by_date[d][r["bloque"]] += r["horas"]
         for bl, color in [(b, BLOQUES[b][1]) for b in BLOQUES]:
             all_dates = sorted(by_date.keys())
