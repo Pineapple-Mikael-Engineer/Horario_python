@@ -199,6 +199,7 @@ class HorarioTab(QWidget):
             self._build_table()
 
     def _register_block(self, hour, day_col, bloque):
+        from .dialogs import RegistrarDialog  # import local para evitar fallos por recarga/ciclos
         slot_date = self._slot_date(day_col)
         if slot_date != date.today():
             QMessageBox.information(self, "Registro automático", "Solo se registra automáticamente en el día actual.")
@@ -339,6 +340,7 @@ class RegistroTab(QWidget):
         self.refresh()
 
     def _quick_register(self, bloque):
+        from .dialogs import RegistrarDialog  # import local para evitar NameError en algunos entornos
         by_block = self._today_available_hours()
         hours = by_block.get(bloque, 0.0)
         if hours <= 0:
