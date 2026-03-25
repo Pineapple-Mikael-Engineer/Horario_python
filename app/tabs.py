@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
 
 from .constants import BASE_SCHEDULE, BLOQUES, DAYS_ES, HOURS, PALETTE, SCHEDULE_TYPES
 from .data import save_data
-from .dialogs import AssignBlockDialog, RegistrarDialog, TagsDialog, TemasB1Dialog
+from .dialogs import AssignBlockDialog, TagsDialog, TemasB1Dialog
 from .styles import btn_color
 from .widgets import KpiCard, Label, MplCanvas, Separator
 

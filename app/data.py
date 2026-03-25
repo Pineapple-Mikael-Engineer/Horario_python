@@ -10,9 +10,9 @@ def _sample_data():
     monday = today - timedelta(days=today.weekday())
 
     return {
-        "registros": [],
-        "b1_temas": [],
-        "tags": [],
+        "registros": registros,
+        "b1_temas": temas,
+        "tags": sorted(tags, key=str.lower),
         "schedule": {},
         "b_nombres": {
             "B1": "Aprendizaje Teórico",
