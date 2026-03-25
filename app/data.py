@@ -8,7 +8,9 @@ from .constants import DATA_FILE
 def _sample_data():
     today = date.today()
     monday = today - timedelta(days=today.weekday())
-
+    registros = []
+    temas = []
+    tags = set()
     return {
         "registros": registros,
         "b1_temas": temas,
