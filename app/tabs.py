@@ -203,21 +203,24 @@ class HorarioTab(QWidget):
         if slot_date != date.today():
             QMessageBox.information(self, "Registro automático", "Solo se registra automáticamente en el día actual.")
             return
-        self._remove_auto_registro(hour, day_col)
-        slot_id = f"{slot_date.isoformat()}_{hour}_{day_col}"
-        self.data.setdefault("registros", []).append(
-            {
-                "date": slot_date.isoformat(),
-                "bloque": bloque,
-                "horas": self._slot_hours(hour),
-                "subtema": None,
-                "nota": f"Auto-horario {hour}",
-                "tags": ["Auto"],
-                "auto_slot": slot_id,
-            }
+        dlg = RegistrarDialog(
+            self.data,
+            bloque,
+            self,
+            fixed_horas=self._slot_hours(hour),
+            allow_edit_horas=(bloque == "EJ"),
+            default_date=slot_date,
         )
-        save_data(self.data)
-        self.registro_added.emit()
+        if dlg.exec():
+            reg = dlg.get_registro()
+            self.data.setdefault("registros", []).append(reg)
+            tags = self.data.setdefault("tags", [])
+            for tag in reg.get("tags", []):
+                if tag not in tags:
+                    tags.append(tag)
+            tags.sort(key=str.lower)
+            save_data(self.data)
+            self.registro_added.emit()
 
     def refresh(self):
         self._build_table()
@@ -341,24 +344,25 @@ class RegistroTab(QWidget):
         if hours <= 0:
             QMessageBox.warning(self, "Bloque no disponible", "Ese bloque no está disponible en tu horario de hoy.")
             return
-        today = date.today().isoformat()
-        self.data["registros"] = [
-            r for r in self.data.get("registros", [])
-            if not (r.get("date") == today and r.get("bloque") == bloque and r.get("nota") == "Auto-resumen diario")
-        ]
-        self.data.setdefault("registros", []).append(
-            {
-                "date": today,
-                "bloque": bloque,
-                "horas": hours,
-                "subtema": None,
-                "nota": "Auto-resumen diario",
-                "tags": ["Auto"],
-            }
+        dlg = RegistrarDialog(
+            self.data,
+            bloque,
+            self,
+            fixed_horas=hours,
+            allow_edit_horas=(bloque == "EJ"),
+            default_date=date.today(),
         )
-        save_data(self.data)
-        self.refresh()
-        self.registro_added.emit()
+        if dlg.exec():
+            reg = dlg.get_registro()
+            self.data.setdefault("registros", []).append(reg)
+            tags = self.data.setdefault("tags", [])
+            for tag in reg.get("tags", []):
+                if tag not in tags:
+                    tags.append(tag)
+            tags.sort(key=str.lower)
+            save_data(self.data)
+            self.refresh()
+            self.registro_added.emit()
 
     def _today_available_hours(self):
         today_col = date.today().weekday()
@@ -432,6 +436,11 @@ class EstadisticasTab(QWidget):
         self.range_cb.addItems(["Última semana", "Últimos 30 días", "Últimos 90 días", "Todo el tiempo"])
         self.range_cb.currentIndexChanged.connect(self.refresh)
         top.addWidget(self.range_cb)
+        top.addWidget(Label("Etiqueta:", 13, PALETTE['muted']))
+        self.tag_cb = QComboBox()
+        self.tag_cb.addItem("Todas", "__all__")
+        self.tag_cb.currentIndexChanged.connect(self.refresh)
+        top.addWidget(self.tag_cb)
         top.addStretch()
         outer.addLayout(top)
 
@@ -460,6 +469,7 @@ class EstadisticasTab(QWidget):
     def refresh(self):
         self._clear_kpis()
         self._clear_charts()
+        self._reload_tag_filter()
         filtered = self._filtered_records()
         temas = {t["id"]: t["nombre"] for t in self.data.get("b1_temas", [])}
         bnames = self.data.get("b_nombres", {})
@@ -482,14 +492,32 @@ class EstadisticasTab(QWidget):
 
     def _filtered_records(self):
         filtered = []
+        selected_tag = self.tag_cb.currentData() if hasattr(self, "tag_cb") else "__all__"
         for r in self.data.get("registros", []):
             try:
                 d = datetime.strptime(r["date"], "%Y-%m-%d").date()
                 if d >= self._date_limit():
+                    if selected_tag != "__all__" and selected_tag not in r.get("tags", []):
+                        continue
                     filtered.append((d, r))
             except Exception:
                 continue
         return filtered
+
+    def _reload_tag_filter(self):
+        if not hasattr(self, "tag_cb"):
+            return
+        current = self.tag_cb.currentData()
+        tags = sorted({tag for r in self.data.get("registros", []) for tag in r.get("tags", [])}, key=str.lower)
+        self.tag_cb.blockSignals(True)
+        self.tag_cb.clear()
+        self.tag_cb.addItem("Todas", "__all__")
+        for tag in tags:
+            self.tag_cb.addItem(tag, tag)
+        if current:
+            idx = self.tag_cb.findData(current)
+            self.tag_cb.setCurrentIndex(idx if idx >= 0 else 0)
+        self.tag_cb.blockSignals(False)
 
     def _aggregate_stats(self, filtered):
         by_block = defaultdict(float)

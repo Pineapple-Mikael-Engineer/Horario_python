@@ -24,7 +24,15 @@ from .widgets import Label, Separator
 
 
 class RegistrarDialog(QDialog):
-    def __init__(self, data, bloque_default=None, parent=None):
+    def __init__(
+        self,
+        data,
+        bloque_default=None,
+        parent=None,
+        fixed_horas=None,
+        allow_edit_horas=True,
+        default_date=None,
+    ):
         super().__init__(parent)
         self.data = data
         self.setWindowTitle("Registrar sesión")
@@ -40,7 +48,7 @@ class RegistrarDialog(QDialog):
 
         row_f = QHBoxLayout()
         row_f.addWidget(Label("Fecha:", 13, PALETTE['muted']))
-        self.fecha_edit = QLineEdit(str(date.today()))
+        self.fecha_edit = QLineEdit(str(default_date or date.today()))
         self.fecha_edit.setPlaceholderText("YYYY-MM-DD")
         row_f.addWidget(self.fecha_edit)
         lay.addLayout(row_f)
@@ -64,8 +72,9 @@ class RegistrarDialog(QDialog):
         self.horas_spin = QDoubleSpinBox()
         self.horas_spin.setRange(0.25, 12.0)
         self.horas_spin.setSingleStep(0.25)
-        self.horas_spin.setValue(1.0)
+        self.horas_spin.setValue(float(fixed_horas) if fixed_horas is not None else 1.0)
         self.horas_spin.setSuffix(" h")
+        self.horas_spin.setEnabled(allow_edit_horas)
         row_h.addWidget(self.horas_spin)
         lay.addLayout(row_h)
 
