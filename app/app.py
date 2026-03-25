@@ -5,6 +5,7 @@ from PyQt6.QtGui import QColor, QPalette
 from PyQt6.QtWidgets import QApplication
 
 from .constants import PALETTE
+from .data import load_data
 from .main_window import MainWindow
 
 matplotlib.use("QtAgg")
@@ -26,6 +27,9 @@ def run_app():
     pal.setColor(QPalette.ColorRole.Highlight, QColor(PALETTE['B1']))
     pal.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
     app.setPalette(pal)
+
+    settings = load_data().get("settings", {})
+    app.setStyleSheet(f"* {{ font-size: {int(settings.get('font_size', 13))}px; }}")
 
     window = MainWindow()
     window.show()
