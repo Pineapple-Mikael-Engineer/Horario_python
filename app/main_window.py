@@ -1,9 +1,9 @@
 from datetime import date
 
-from PyQt6.QtWidgets import QHBoxLayout, QMainWindow, QTabWidget, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QFileDialog, QHBoxLayout, QMainWindow, QMessageBox, QPushButton, QTabWidget, QVBoxLayout, QWidget
 
 from .constants import PALETTE
-from .data import load_data
+from .data import DATA_FILE, export_data, import_data, load_data, save_data
 from .styles import GLOBAL_STYLE
 from .tabs import EstadisticasTab, HorarioTab, RegistroTab
 from .widgets import Label
@@ -35,6 +35,12 @@ class MainWindow(QMainWindow):
         span.setStyleSheet(f"color:{PALETTE['B1']}; font-size:15px; font-style:italic;")
         tbl.addWidget(span)
         tbl.addStretch()
+        btn_import = QPushButton("Importar BD")
+        btn_import.clicked.connect(self._import_db)
+        tbl.addWidget(btn_import)
+        btn_export = QPushButton("Exportar BD")
+        btn_export.clicked.connect(self._export_db)
+        tbl.addWidget(btn_export)
         tbl.addWidget(Label(date.today().strftime("%A, %d de %B de %Y"), 12, PALETTE['muted']))
         main_lay.addWidget(topbar)
 
@@ -65,3 +71,32 @@ class MainWindow(QMainWindow):
             self.stats_tab.refresh()
         elif idx == 1:
             self.registro_tab.refresh()
+
+    def _export_db(self):
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Exportar base de datos",
+            DATA_FILE.replace(".json", "_export.json"),
+            "JSON (*.json)",
+        )
+        if not path:
+            return
+        export_data(self.data, path)
+        QMessageBox.information(self, "Exportación completada", f"Datos exportados en:\n{path}")
+
+    def _import_db(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Importar base de datos", "", "JSON (*.json)")
+        if not path:
+            return
+        try:
+            self.data = import_data(path)
+            save_data(self.data)
+            self.horario_tab.data = self.data
+            self.registro_tab.data = self.data
+            self.stats_tab.data = self.data
+            self.horario_tab.refresh()
+            self.registro_tab.refresh()
+            self.stats_tab.refresh()
+            QMessageBox.information(self, "Importación completada", "La base de datos fue importada correctamente.")
+        except Exception as exc:
+            QMessageBox.critical(self, "Error al importar", f"No se pudo importar el archivo:\n{exc}")
