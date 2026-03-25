@@ -114,7 +114,7 @@ class HorarioTab(QWidget):
                     cell_text = sched[cell_key].get("text", "")
                 else:
                     cell_type, cell_text = base_type, base_text
-                editable = base_type == "LIBRE"
+                editable = base_type == "LIBRE" and c == today_col
                 self.grid.addWidget(self._make_cell(hour, c, cell_type, cell_text, today_col, editable), r + 1, c + 1)
 
         self.grid.setColumnMinimumWidth(0, 86)
@@ -172,11 +172,11 @@ class HorarioTab(QWidget):
             btn.setStyleSheet(
                 f"""
                 QPushButton {{
-                    background:{color}18; color:{color};
-                    border:1px solid {color}33; border-radius:6px;
-                    font-size:11px;
+                    background:{color}22; color:{PALETTE['text']};
+                    border:1px solid {color}66; border-radius:6px;
+                    font-size:11px; font-weight:600;
                 }}
-                QPushButton:hover {{ background:{color}30; }}
+                QPushButton:hover {{ background:{color}44; }}
             """
             )
             if cell_type == "EJ":

@@ -3,8 +3,6 @@ import json
 
 from .styles import get_palette
 
-from .styles import get_palette
-
 DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "productividad_data.json")
 
 
@@ -55,19 +53,19 @@ SCHEDULE_TYPES = {
 BASE_SCHEDULE = {
     "04–06": {d: ("EJ", "🏃") for d in range(7)},
     "06–08": {d: ("MA", "🌅") for d in range(7)},
-    "08–09": {0: ("CLASE", "🎓MC216"), 1: ("LIBRE", "🧠B*"), 2: ("LIBRE", "🧠B*"), 3: ("LIBRE", "🧠B*"), 4: ("LIBRE", "🧠B*"), 5: ("CLASE", "🎓MT235"), 6: ("LIBRE", "🧠B*")},
-    "09–10": {0: ("CLASE", "🎓MC216"), 1: ("LIBRE", "🧠B*"), 2: ("LIBRE", "🧠B*"), 3: ("LIBRE", "🧠B*"), 4: ("LIBRE", "🧠B*"), 5: ("CLASE", "🎓MT235"), 6: ("LIBRE", "🧠B*")},
-    "10–11": {0: ("CLASE", "🎓MC216"), 1: ("LIBRE", "🧠B*"), 2: ("LIBRE", "🧠B*"), 3: ("CLASE", "🎓BRN01"), 4: ("CLASE", "🎓MB536"), 5: ("LIBRE", "🧠B*"), 6: ("LIBRE", "🧠B*")},
-    "11–12": {0: ("LIBRE", "🧠B*"), 1: ("LIBRE", "🧠B*"), 2: ("LIBRE", "🧠B*"), 3: ("CLASE", "🎓BRN01/🎓ML140"), 4: ("CLASE", "🎓MB536"), 5: ("CLASE", "🎓BRN01"), 6: ("LIBRE", "🧠B*")},
-    "12–13": {0: ("LIBRE", "🧠B*"), 1: ("LIBRE", "🧠B*"), 2: ("LIBRE", "🧠B*"), 3: ("CLASE", "🎓BRN01/🎓ML140"), 4: ("LIBRE", "🧠B*"), 5: ("CLASE", "🎓BRN01"), 6: ("LIBRE", "🧠B*")},
-    "13–14": {0: ("LIBRE", "🧠B*"), 1: ("LIBRE", "🧠B*"), 2: ("LIBRE", "🧠B*"), 3: ("CLASE", "🎓ML140"), 4: ("LIBRE", "🧠B*"), 5: ("CLASE", "🎓MC216"), 6: ("LIBRE", "🧠B*")},
-    "14–15": {0: ("LIBRE", "🧠B*"), 1: ("LIBRE", "🧠B*"), 2: ("LIBRE", "🧠B*"), 3: ("LIBRE", "🧠B*"), 4: ("LIBRE", "🧠B*"), 5: ("CLASE", "🎓MC216"), 6: ("LIBRE", "🧠B*")},
-    "15–16": {0: ("LIBRE", "🧠B*"), 1: ("LIBRE", "🧠B*"), 2: ("LIBRE", "🧠B*"), 3: ("LIBRE", "🧠B*"), 4: ("LIBRE", "🧠B*"), 5: ("CLASE", "🎓MC216"), 6: ("LIBRE", "🧠B*")},
-    "16–17": {0: ("CLASE", "🎓ML140"), 1: ("LIBRE", "🧠B*"), 2: ("CLASE", "🎓MB536"), 3: ("CLASE", "🎓ML140"), 4: ("LIBRE", "🧠B*"), 5: ("LIBRE", "🧠B*"), 6: ("LIBRE", "🧠B*")},
-    "17–18": {0: ("CLASE", "🎓ML140"), 1: ("CENA", "🍽"), 2: ("CLASE", "🎓MB536"), 3: ("CLASE", "🎓ML140"), 4: ("LIBRE", "🧠B*"), 5: ("LIBRE", "🧠B*"), 6: ("LIBRE", "🧠B*")},
-    "18–19": {0: ("CENA", "🍽"), 1: ("CLASE", "🎓MN121"), 2: ("CLASE", "🎓MB536"), 3: ("CENA", "🍽"), 4: ("CENA", "🍽"), 5: ("LIBRE", "🧠B*"), 6: ("LIBRE", "🧠B*")},
-    "19–20": {0: ("CLASE", "🎓MN121"), 1: ("CLASE", "🎓MN121"), 2: ("LIBRE", "🧠B*"), 3: ("CLASE", "🎓MT235"), 4: ("CLASE", "🎓MN121"), 5: ("LIBRE", "🧠B*"), 6: ("LIBRE", "🧠B*")},
-    "20–21": {0: ("CLASE", "🎓MN121"), 1: ("CLASE", "🎓MN121"), 2: ("LIBRE", "🧠B*"), 3: ("CLASE", "🎓MT235"), 4: ("CLASE", "🎓MN121"), 5: ("LIBRE", "🧠B*"), 6: ("LIBRE", "🧠B*")},
+    "08–09": {0: ("CLASE", "🎓MC216"), 1: ("LIBRE", "Hora libre"), 2: ("LIBRE", "Hora libre"), 3: ("LIBRE", "Hora libre"), 4: ("LIBRE", "Hora libre"), 5: ("CLASE", "🎓MT235"), 6: ("LIBRE", "Hora libre")},
+    "09–10": {0: ("CLASE", "🎓MC216"), 1: ("LIBRE", "Hora libre"), 2: ("LIBRE", "Hora libre"), 3: ("LIBRE", "Hora libre"), 4: ("LIBRE", "Hora libre"), 5: ("CLASE", "🎓MT235"), 6: ("LIBRE", "Hora libre")},
+    "10–11": {0: ("CLASE", "🎓MC216"), 1: ("LIBRE", "Hora libre"), 2: ("LIBRE", "Hora libre"), 3: ("CLASE", "🎓BRN01"), 4: ("CLASE", "🎓MB536"), 5: ("LIBRE", "Hora libre"), 6: ("LIBRE", "Hora libre")},
+    "11–12": {0: ("LIBRE", "Hora libre"), 1: ("LIBRE", "Hora libre"), 2: ("LIBRE", "Hora libre"), 3: ("CLASE", "🎓BRN01/🎓ML140"), 4: ("CLASE", "🎓MB536"), 5: ("CLASE", "🎓BRN01"), 6: ("LIBRE", "Hora libre")},
+    "12–13": {0: ("LIBRE", "Hora libre"), 1: ("LIBRE", "Hora libre"), 2: ("LIBRE", "Hora libre"), 3: ("CLASE", "🎓BRN01/🎓ML140"), 4: ("LIBRE", "Hora libre"), 5: ("CLASE", "🎓BRN01"), 6: ("LIBRE", "Hora libre")},
+    "13–14": {0: ("LIBRE", "Hora libre"), 1: ("LIBRE", "Hora libre"), 2: ("LIBRE", "Hora libre"), 3: ("CLASE", "🎓ML140"), 4: ("LIBRE", "Hora libre"), 5: ("CLASE", "🎓MC216"), 6: ("LIBRE", "Hora libre")},
+    "14–15": {0: ("LIBRE", "Hora libre"), 1: ("LIBRE", "Hora libre"), 2: ("LIBRE", "Hora libre"), 3: ("LIBRE", "Hora libre"), 4: ("LIBRE", "Hora libre"), 5: ("CLASE", "🎓MC216"), 6: ("LIBRE", "Hora libre")},
+    "15–16": {0: ("LIBRE", "Hora libre"), 1: ("LIBRE", "Hora libre"), 2: ("LIBRE", "Hora libre"), 3: ("LIBRE", "Hora libre"), 4: ("LIBRE", "Hora libre"), 5: ("CLASE", "🎓MC216"), 6: ("LIBRE", "Hora libre")},
+    "16–17": {0: ("CLASE", "🎓ML140"), 1: ("LIBRE", "Hora libre"), 2: ("CLASE", "🎓MB536"), 3: ("CLASE", "🎓ML140"), 4: ("LIBRE", "Hora libre"), 5: ("LIBRE", "Hora libre"), 6: ("LIBRE", "Hora libre")},
+    "17–18": {0: ("CLASE", "🎓ML140"), 1: ("CENA", "🍽"), 2: ("CLASE", "🎓MB536"), 3: ("CLASE", "🎓ML140"), 4: ("LIBRE", "Hora libre"), 5: ("LIBRE", "Hora libre"), 6: ("LIBRE", "Hora libre")},
+    "18–19": {0: ("CENA", "🍽"), 1: ("CLASE", "🎓MN121"), 2: ("CLASE", "🎓MB536"), 3: ("CENA", "🍽"), 4: ("CENA", "🍽"), 5: ("LIBRE", "Hora libre"), 6: ("LIBRE", "Hora libre")},
+    "19–20": {0: ("CLASE", "🎓MN121"), 1: ("CLASE", "🎓MN121"), 2: ("LIBRE", "Hora libre"), 3: ("CLASE", "🎓MT235"), 4: ("CLASE", "🎓MN121"), 5: ("LIBRE", "Hora libre"), 6: ("LIBRE", "Hora libre")},
+    "20–21": {0: ("CLASE", "🎓MN121"), 1: ("CLASE", "🎓MN121"), 2: ("LIBRE", "Hora libre"), 3: ("CLASE", "🎓MT235"), 4: ("CLASE", "🎓MN121"), 5: ("LIBRE", "Hora libre"), 6: ("LIBRE", "Hora libre")},
     "21–22": {0: ("BL", "📗BL"), 1: ("CLASE", "🎓MN121"), 2: ("BL", "📗BL"), 3: ("CLASE", "🎓MT235"), 4: ("CLASE", "🎓MN121"), 5: ("BL", "📗BL"), 6: ("BL", "📗BL")},
     "22–23": {d: ("BL", "📗BL") for d in range(7)},
 }

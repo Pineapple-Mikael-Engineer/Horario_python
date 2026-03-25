@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
 
 from .constants import BLOQUES, DAYS_ES, PALETTE
 from .data import save_data
-from .styles import GLOBAL_STYLE, btn_color
+from .styles import btn_color, get_global_style
 from .widgets import Label, Separator
 
 
@@ -29,7 +29,7 @@ class RegistrarDialog(QDialog):
         self.data = data
         self.setWindowTitle("Registrar sesión")
         self.setMinimumWidth(420)
-        self.setStyleSheet(GLOBAL_STYLE + f"QDialog {{ background:{PALETTE['surface2']}; border-radius:14px; }}")
+        self.setStyleSheet(get_global_style(PALETTE) + f"QDialog {{ background:{PALETTE['surface2']}; border-radius:14px; }}")
 
         lay = QVBoxLayout(self)
         lay.setSpacing(14)
@@ -124,7 +124,7 @@ class TemasB1Dialog(QDialog):
         self.data = data
         self.setWindowTitle("Administrar temas B1")
         self.setMinimumSize(400, 420)
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(get_global_style(PALETTE))
         lay = QVBoxLayout(self)
         lay.setContentsMargins(20, 20, 20, 20)
         lay.setSpacing(12)
@@ -185,7 +185,7 @@ class AssignBlockDialog(QDialog):
     def __init__(self, data, hour, day_col, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Asignar bloque")
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(get_global_style(PALETTE))
         self.setFixedWidth(320)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(20, 20, 20, 20)
@@ -214,7 +214,7 @@ class TagsDialog(QDialog):
         self.data = data
         self.setWindowTitle("Administrar etiquetas")
         self.setMinimumSize(400, 420)
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(get_global_style(PALETTE))
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(20, 20, 20, 20)
@@ -277,7 +277,7 @@ class SettingsDialog(QDialog):
         self.data = data
         self.setWindowTitle("Configuración")
         self.setMinimumWidth(380)
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(get_global_style(PALETTE))
 
         settings = self.data.setdefault("settings", {})
         lay = QVBoxLayout(self)

@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow,
 from .constants import PALETTE
 from .data import DATA_FILE, export_data, import_data, load_data, save_data
 from .dialogs import SettingsDialog
-from .styles import GLOBAL_STYLE
+from .styles import get_global_style
 from .tabs import EstadisticasTab, HorarioTab, RegistroTab
 from .widgets import Label
 
@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         self.data = load_data()
         self.setWindowTitle("Panel de Productividad")
         self.setMinimumSize(1100, 720)
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(get_global_style(PALETTE))
 
         central = QWidget()
         self.setCentralWidget(central)
