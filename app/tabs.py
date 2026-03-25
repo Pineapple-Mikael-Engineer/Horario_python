@@ -62,7 +62,9 @@ class HorarioTab(QWidget):
         scroll.setStyleSheet("QScrollArea{border:none;background:transparent;}")
         container = QWidget()
         self.grid = QGridLayout(container)
-        self.grid.setSpacing(2)
+        self.grid.setHorizontalSpacing(8)
+        self.grid.setVerticalSpacing(8)
+        self.grid.setContentsMargins(8, 8, 8, 8)
         scroll.setWidget(container)
         lay.addWidget(scroll)
 
@@ -81,9 +83,9 @@ class HorarioTab(QWidget):
                 item.widget().deleteLater()
 
         today_col = date.today().weekday()
-        corner = Label("Hora", 11, PALETTE['muted'])
+        corner = Label("Hora", 13, PALETTE['muted'], bold=True)
         corner.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        corner.setStyleSheet(f"background:{PALETTE['surface2']}; border-radius:6px; padding:8px;")
+        corner.setStyleSheet(f"background:{PALETTE['surface2']}; border-radius:10px; padding:10px;")
         self.grid.addWidget(corner, 0, 0)
 
         monday = self._monday()
@@ -91,17 +93,17 @@ class HorarioTab(QWidget):
             d = monday + timedelta(days=c)
             is_today = c == today_col
             color = PALETTE['B1'] if is_today else PALETTE['muted']
-            lbl = Label(f"{day}\n{d.strftime('%d')}", 11, color, bold=is_today)
+            lbl = Label(f"{day}\n{d.strftime('%d')}", 12, color, bold=is_today)
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             bg = PALETTE['surface3'] if is_today else PALETTE['surface2']
-            lbl.setStyleSheet(f"background:{bg}; border-radius:6px; padding:6px;")
+            lbl.setStyleSheet(f"background:{bg}; border-radius:10px; padding:8px 10px; min-height:58px;")
             self.grid.addWidget(lbl, 0, c + 1)
 
         sched = self.data.get("schedule", {})
         for r, hour in enumerate(HOURS):
-            time_lbl = Label(hour, 10, PALETTE['muted'])
+            time_lbl = Label(hour, 11, PALETTE['muted'], bold=True)
             time_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            time_lbl.setStyleSheet(f"background:{PALETTE['surface2']}; border-radius:5px; padding:4px 8px; min-width:54px;")
+            time_lbl.setStyleSheet(f"background:{PALETTE['surface2']}; border-radius:8px; padding:8px 10px; min-width:76px;")
             self.grid.addWidget(time_lbl, r + 1, 0)
 
             for c in range(7):
@@ -114,8 +116,10 @@ class HorarioTab(QWidget):
                     cell_type, cell_text = base_type, base_text
                 self.grid.addWidget(self._make_cell(hour, c, cell_type, cell_text, today_col), r + 1, c + 1)
 
+        self.grid.setColumnMinimumWidth(0, 86)
         self.grid.setColumnStretch(0, 0)
         for c in range(7):
+            self.grid.setColumnMinimumWidth(c + 1, 124)
             self.grid.setColumnStretch(c + 1, 1)
 
     def _make_cell(self, hour, day_col, cell_type, cell_text, today_col):
@@ -125,8 +129,8 @@ class HorarioTab(QWidget):
 
         display = cell_text if cell_text else info[0]
         btn = QPushButton(display)
-        btn.setFixedHeight(38)
-        btn.setFont(QFont("Segoe UI", 10))
+        btn.setFixedHeight(44)
+        btn.setFont(QFont("Segoe UI", 11))
 
         if cell_type == "LIBRE":
             bg = PALETTE['surface2'] if not is_today else PALETTE['surface3']
@@ -380,9 +384,27 @@ class EstadisticasTab(QWidget):
     def refresh(self):
         self._clear_kpis()
         self._clear_charts()
-
+        filtered = self._filtered_records()
         temas = {t["id"]: t["nombre"] for t in self.data.get("b1_temas", [])}
         bnames = self.data.get("b_nombres", {})
+        by_block, by_tag = self._aggregate_stats(filtered)
+
+        self._render_kpis(filtered, by_block)
+        if not filtered:
+            self.charts_lay.addWidget(Label("Sin datos para el período seleccionado.", 13, PALETTE['muted'], italic=True))
+            return
+
+        self._render_block_hours(by_block, bnames)
+        self._render_cumulative_progress(filtered, bnames)
+        self._render_time_distribution(by_block, bnames)
+        if by_tag:
+            self._render_tag_hours(by_tag)
+        self._render_b1_topics(filtered, temas)
+        self._render_weekday_activity(filtered)
+        self._render_weekly_hours(filtered)
+        self.charts_lay.addStretch()
+
+    def _filtered_records(self):
         filtered = []
         for r in self.data.get("registros", []):
             try:
@@ -390,8 +412,10 @@ class EstadisticasTab(QWidget):
                 if d >= self._date_limit():
                     filtered.append((d, r))
             except Exception:
-                pass
+                continue
+        return filtered
 
+    def _aggregate_stats(self, filtered):
         by_block = defaultdict(float)
         by_tag = defaultdict(float)
         for _, r in filtered:
@@ -401,11 +425,15 @@ class EstadisticasTab(QWidget):
                 share = r["horas"] / len(tags)
                 for tag in tags:
                     by_tag[tag] += share
+        return by_block, by_tag
+
+    def _render_kpis(self, filtered, by_block):
         for label, val, color in [
             ("Total horas", f"{sum(r['horas'] for _, r in filtered):.1f}h", PALETTE['text']),
             ("B1 Aprendizaje", f"{by_block['B1']:.1f}h", PALETTE['B1']),
-            ("B2 Proyectos", f"{by_block['B2']:.1f}h", PALETTE['B2']),
-            ("B3 Habilidades", f"{by_block['B3']:.1f}h", PALETTE['B3']),
+            ("B2 Práctica", f"{by_block['B2']:.1f}h", PALETTE['B2']),
+            ("B3 Proyecto", f"{by_block['B3']:.1f}h", PALETTE['B3']),
+            ("B4 Investigación", f"{by_block['B4']:.1f}h", PALETTE['B4']),
             ("Ejercicio", f"{by_block['EJ']:.1f}h", PALETTE['EJ']),
             ("Sesiones", str(len(filtered)), PALETTE['muted']),
         ]:
@@ -413,10 +441,7 @@ class EstadisticasTab(QWidget):
             card.setMinimumWidth(110)
             self.kpi_row.addWidget(card)
 
-        if not filtered:
-            self.charts_lay.addWidget(Label("Sin datos para el período seleccionado.", 13, PALETTE['muted'], italic=True))
-            return
-
+    def _render_block_hours(self, by_block, bnames):
         self._add_section_label("Horas por bloque")
         canvas1 = MplCanvas(8, 3.2)
         ax = canvas1.fig.add_subplot(111)
@@ -431,6 +456,7 @@ class EstadisticasTab(QWidget):
         canvas1.fig.tight_layout()
         self.charts_lay.addWidget(canvas1)
 
+    def _render_cumulative_progress(self, filtered, bnames):
         self._add_section_label("Progreso acumulado en el tiempo")
         canvas2 = MplCanvas(8, 3.2)
         ax2 = canvas2.fig.add_subplot(111)
@@ -451,6 +477,7 @@ class EstadisticasTab(QWidget):
         canvas2.fig.tight_layout()
         self.charts_lay.addWidget(canvas2)
 
+    def _render_time_distribution(self, by_block, bnames):
         self._add_section_label("Distribución de tiempo")
         canvas3 = MplCanvas(6, 3.5)
         ax3 = canvas3.fig.add_subplot(111)
@@ -477,21 +504,22 @@ class EstadisticasTab(QWidget):
         canvas3.fig.tight_layout()
         self.charts_lay.addWidget(canvas3)
 
-        if by_tag:
-            self._add_section_label("Horas por etiqueta")
-            canvas_tags = MplCanvas(8, 3.0)
-            ax_tags = canvas_tags.fig.add_subplot(111)
-            top_items = sorted(by_tag.items(), key=lambda x: -x[1])[:10]
-            tag_names = [k for k, _ in top_items]
-            tag_vals = [v for _, v in top_items]
-            bars_t = ax_tags.barh(tag_names, tag_vals, color=PALETTE["B2"] + "bb", edgecolor=PALETTE["B2"], linewidth=1.0, height=0.55)
-            for bar, v in zip(bars_t, tag_vals):
-                ax_tags.text(v + 0.03, bar.get_y() + bar.get_height() / 2, f"{v:.1f}h", va="center", color=PALETTE["text"], fontsize=9)
-            self._style_axes(ax_tags, xlabel="Horas")
-            ax_tags.invert_yaxis()
-            canvas_tags.fig.tight_layout()
-            self.charts_lay.addWidget(canvas_tags)
+    def _render_tag_hours(self, by_tag):
+        self._add_section_label("Horas por etiqueta")
+        canvas_tags = MplCanvas(8, 3.0)
+        ax_tags = canvas_tags.fig.add_subplot(111)
+        top_items = sorted(by_tag.items(), key=lambda x: -x[1])[:10]
+        tag_names = [k for k, _ in top_items]
+        tag_vals = [v for _, v in top_items]
+        bars_t = ax_tags.barh(tag_names, tag_vals, color=PALETTE["B2"] + "bb", edgecolor=PALETTE["B2"], linewidth=1.0, height=0.55)
+        for bar, v in zip(bars_t, tag_vals):
+            ax_tags.text(v + 0.03, bar.get_y() + bar.get_height() / 2, f"{v:.1f}h", va="center", color=PALETTE["text"], fontsize=9)
+        self._style_axes(ax_tags, xlabel="Horas")
+        ax_tags.invert_yaxis()
+        canvas_tags.fig.tight_layout()
+        self.charts_lay.addWidget(canvas_tags)
 
+    def _render_b1_topics(self, filtered, temas):
         b1_recs = [(d, r) for d, r in filtered if r["bloque"] == "B1" and r.get("subtema")]
         if b1_recs:
             self._add_section_label("B1 — Horas por subtema de aprendizaje")
@@ -510,6 +538,7 @@ class EstadisticasTab(QWidget):
             canvas4.fig.tight_layout()
             self.charts_lay.addWidget(canvas4)
 
+    def _render_weekday_activity(self, filtered):
         self._add_section_label("Actividad por día de la semana")
         canvas5 = MplCanvas(8, 2.8)
         ax5 = canvas5.fig.add_subplot(111)
@@ -527,6 +556,7 @@ class EstadisticasTab(QWidget):
         canvas5.fig.tight_layout()
         self.charts_lay.addWidget(canvas5)
 
+    def _render_weekly_hours(self, filtered):
         self._add_section_label("Horas por semana (últimas 12 semanas)")
         canvas6 = MplCanvas(8, 2.8)
         ax6 = canvas6.fig.add_subplot(111)
@@ -544,8 +574,6 @@ class EstadisticasTab(QWidget):
         self._style_axes(ax6, ylabel="Horas")
         canvas6.fig.tight_layout()
         self.charts_lay.addWidget(canvas6)
-
-        self.charts_lay.addStretch()
 
     def _style_axes(self, ax, xlabel=None, ylabel=None):
         ax.set_facecolor(PALETTE['surface'])

@@ -11,6 +11,7 @@ Aplicación de escritorio para planificar y registrar sesiones de estudio/produc
 - **Gestión de temas B1** (crear/eliminar subtemas de aprendizaje).
 - **Gestión de etiquetas** desde la interfaz.
 - **Renombrado de bloques** B1–B4.
+- **Importación / exportación de base de datos** en formato JSON.
 - **Panel de estadísticas** con KPIs y gráficos:
   - Horas por bloque.
   - Horas por etiqueta.
@@ -40,6 +41,8 @@ python productividad.py
 ### Modo de color
 
 Puedes ejecutar la app en tema oscuro (por defecto) o claro mediante la variable de entorno `PRODUCTIVIDAD_THEME`:
+- `dark` → paleta **obsidian_nord**
+- `light` → paleta **blue_topaz**
 
 ```bash
 PRODUCTIVIDAD_THEME=dark python productividad.py

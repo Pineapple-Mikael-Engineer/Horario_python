@@ -32,8 +32,20 @@ def _sample_data():
         "b1_temas": temas,
         "tags": sorted(tags, key=str.lower),
         "schedule": {},
-        "b_nombres": {"B1": "Aprendizaje", "B2": "Proyectos", "B3": "Habilidades", "B4": "Otro"},
+        "b_nombres": {
+            "B1": "Aprendizaje Teórico",
+            "B2": "Práctica Dirigida",
+            "B3": "Construcción / Proyecto",
+            "B4": "Investigación / Debugging",
+        },
     }
+
+
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return _sample_data()
 
 
 def load_data():
@@ -46,3 +58,16 @@ def load_data():
 def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def export_data(data, path):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def import_data(path):
+    with open(path, "r", encoding="utf-8") as f:
+        loaded = json.load(f)
+    defaults = _sample_data()
+    defaults.update({k: v for k, v in loaded.items() if k in defaults})
+    return defaults

@@ -4,38 +4,40 @@ import os
 # 🎨 PALETTES
 # =========================
 
+# Dark: Obsidian Nord-inspired
 PALETTE_DARK = {
-    "bg": "#08090c",
-    "surface": "#0f1117",
-    "surface2": "#161820",
-    "surface3": "#1c1f2a",
-    "border": "#1e2133",
-    "text": "#dde1ec",
-    "muted": "#8a92ab",
-    "dim": "#5a6075",
-    "B1": "#a78bfa",
-    "B2": "#38bdf8",
-    "B3": "#2dd4bf",
-    "B4": "#fb923c",
-    "EJ": "#22c55e",
-    "clase": "#818cf8",
+    "bg": "#2E3440",
+    "surface": "#3B4252",
+    "surface2": "#434C5E",
+    "surface3": "#4C566A",
+    "border": "#5E81AC",
+    "text": "#ECEFF4",
+    "muted": "#D8DEE9",
+    "dim": "#7B88A1",
+    "B1": "#88C0D0",
+    "B2": "#81A1C1",
+    "B3": "#8FBCBB",
+    "B4": "#EBCB8B",
+    "EJ": "#A3BE8C",
+    "clase": "#B48EAD",
 }
 
+# Light: Blue Topaz-inspired
 PALETTE_LIGHT = {
-    "bg": "#f5f7fb",
-    "surface": "#ffffff",
-    "surface2": "#eef2f7",
-    "surface3": "#e2e8f0",
-    "border": "#cbd5e1",
-    "text": "#0f172a",
-    "muted": "#64748b",
-    "dim": "#94a3b8",
-    "B1": "#7c3aed",
-    "B2": "#0284c7",
-    "B3": "#0f766e",
-    "B4": "#ea580c",
-    "EJ": "#16a34a",
-    "clase": "#4f46e5",
+    "bg": "#F6F9FF",
+    "surface": "#FFFFFF",
+    "surface2": "#EEF4FF",
+    "surface3": "#E2ECFF",
+    "border": "#B7C9EE",
+    "text": "#1F2A44",
+    "muted": "#5E6D8A",
+    "dim": "#8C9BB5",
+    "B1": "#3A67D6",
+    "B2": "#2F8ACF",
+    "B3": "#2F9E8F",
+    "B4": "#D28A2D",
+    "EJ": "#3DA35D",
+    "clase": "#5A56E0",
 }
 
 

@@ -7,10 +7,10 @@ DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 PALETTE = get_palette()
 
 BLOQUES = {
-    "B1": ("Aprendizaje", PALETTE["B1"]),
-    "B2": ("Proyectos", PALETTE["B2"]),
-    "B3": ("Habilidades", PALETTE["B3"]),
-    "B4": ("Otro", PALETTE["B4"]),
+    "B1": ("Aprendizaje Teórico", PALETTE["B1"]),
+    "B2": ("Práctica Dirigida", PALETTE["B2"]),
+    "B3": ("Construcción / Proyecto", PALETTE["B3"]),
+    "B4": ("Investigación / Debugging", PALETTE["B4"]),
     "EJ": ("Ejercicio", PALETTE["EJ"]),
 }
 
